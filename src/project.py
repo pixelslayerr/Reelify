@@ -19,7 +19,27 @@ def main():
             dir_output = input("Enter the path you would like to save the stamped images to: ")
             global logo_scale
             logo_scale = float(input("Enter the logo scale as a fraction of artwork width (e.g., 0.1 for 10%): ") or 1)
-            logo_stamp(dir_artwork, logo_path, dir_output)
+
+            print("\nWhere would you like the logo to be stamped?:")
+            print("1. Bottom Right")
+            print("2. Bottom Left")
+            print("3. Top Right")
+            print("4. Top Left")
+            
+            position_choice = input("Enter your choice (1-4): ")
+
+            position_map = {
+                "1": "bottom_right",
+                "2": "bottom_left",
+                "3": "top_right",
+                "4": "top_left",
+            }
+            
+            position = position_map.get(position_choice, "bottom_right")
+
+
+            logo_stamp(dir_artwork, logo_path, dir_output, position=position)
+        
         elif choice == "2":
             watermark()
         elif choice == "3":
