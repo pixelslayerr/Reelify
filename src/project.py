@@ -26,9 +26,7 @@ def main():
         choice = input("Enter your choice (1-4): ")
 
         if choice == "1":
-            dir_artwork = input("Enter the directory containing the artwork: ")
-            logo_path = input("Enter the directory for the logo you would like to stamp: ")
-            dir_output = input("Enter the path you would like to save the stamped images to: ")
+            
             global logo_scale
             logo_scale = float(input("Enter a multiplier for the size of the logo: ") or 1)
 
@@ -50,10 +48,16 @@ def main():
             position = position_map.get(position_choice, "bottom_right")
 
 
-            logo_stamp(dir_artwork, logo_path, dir_output, position=position)
+            logo_stamp(position=position)
         
         elif choice == "2":
-            watermark()
+
+            logo_scale = float(input("Enter a multiplier for size of the logo: ") or 1)
+            opacity = int(input("Enter the watermark opacity (0-255): ") or 128)
+            rotation_angle = float(input("Enter the watermark rotation angle (e.g., 45): ") or 0)
+           
+            watermark(logo_scale, opacity, rotation_angle)
+        
         elif choice == "3":
             demo_reel()
         elif choice == "4":
@@ -119,7 +123,7 @@ def logo_stamp(position="bottom_right"):
 
     print(f"Completed stamping logos on images within {dir_output}")
 
-def watermark(size_multiplier=0.1, opacity=128, rotation=0):
+def watermark(scale_multiplier=1, opacity=128, rotation=45):
     global dir_artwork, logo_path, dir_output
 
     logo = Image.open(logo_path).convert("RGBA")
@@ -138,7 +142,9 @@ def watermark(size_multiplier=0.1, opacity=128, rotation=0):
             artwork = Image.open(artwork_path).convert("RGBA")
             artwork_width, artwork_height = artwork.size
 
-            scaled_logo_width = int(artwork_width * size_multiplier)
+            scale_multiplier = logo_scale/100
+
+            scaled_logo_width = int(artwork_width * scale_multiplier)
             logo_aspect_ratio = logo.height / logo.width
             scaled_logo_height = int(scaled_logo_width * logo_aspect_ratio)
             resized_logo = logo_opacity.resize(
