@@ -1,7 +1,6 @@
 import os
 from PIL import Image
-from moviepy.editor import VideoFileClip, ImageClip, concatenate_videoclips
-
+from moviepy.editor import *
 
 dir_artwork = ""
 logo_path = ""
@@ -61,7 +60,14 @@ def main():
             watermark(logo_scale, opacity, rotation_angle)
         
         elif choice == "3":
-            demo_reel()
+            
+            artist_name = (input("Enter your name: ") or "John Doe")
+            phone_number = (input("Enter your phone number") or "123-456-7890")
+            email = (input("Enter your E-Mail Address") or "johndoe@example.com")
+            reel_title = (input("Enter the title of your reel: ") or "My Demo Reel")
+
+            demo_reel(artist_name, phone_number, email, reel_title)
+
         elif choice == "4":
             print("Shutting down Reelify...")
             break
@@ -172,16 +178,27 @@ def watermark(scale_multiplier=1, opacity=128, rotation=45):
     print(f"Completed watermarking images within {dir_output}")
     
 
-def demo_reel():
+def demo_reel(artist_name, phone_number, email, reel_title):
 
     global dir_artwork, dir_output
     
     print("Processing files for demo reel...")
 
+    clips = []
+
+    #Create Demo Reel Intro Plate
+    text = f"Artist: {artist_name}\nPhone: {phone_number}\nEmail: {email}\nReel Title: {reel_title}"
+
+    intro_text = TextClip(text, fontsize=40, color='white', bg_color='black', size=(1920, 1080))
+
+    intro_text = intro_text.set_duration(3)
+
+    intro_text = intro_text.set_position('center')
+
     supported_images = (".png", ".jpg", ".jpeg")
     supported_videos = (".mp4", ".mov")
 
-    clips = []
+    clips.append(intro_text)
 
     for filename in os.listdir(dir_artwork):
         file_path = os.path.join(dir_artwork, filename)
