@@ -187,13 +187,13 @@ def demo_reel(artist_name, phone_number, email, reel_title):
     clips = []
 
     #Create Demo Reel Intro Plate
-    text = f"Artist: {artist_name}\nPhone: {phone_number}\nEmail: {email}\nReel Title: {reel_title}"
 
-    intro_text = TextClip(text, fontsize=40, color='white', bg_color='black', size=(1920, 1080))
+    title_text = TextClip(f"{reel_title}", fontsize=120, color='white', bg_color='black', size=(1920, 100)).set_position(("center", 200))
+    name_text = TextClip(f"{artist_name}", fontsize=60, color='white', bg_color='black', size=(1920, 100)).set_position(("center", 800))
+    phone_text = TextClip(f"{phone_number}", fontsize=50, color='white', bg_color='black', size=(1920, 100)).set_position(("center", 900))
+    email_text = TextClip(f"{email}", fontsize=50, color='white', bg_color='black', size=(1920, 100)).set_position(("center", 1000))
 
-    intro_text = intro_text.set_duration(3)
-
-    intro_text = intro_text.set_position('center')
+    intro_text = CompositeVideoClip([title_text, name_text, phone_text, email_text], size=(1920, 1080)).set_duration(5)
 
     supported_images = (".png", ".jpg", ".jpeg")
     supported_videos = (".mp4", ".mov")
