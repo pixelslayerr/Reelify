@@ -6,38 +6,47 @@ from moviepy.editor import *
 class ReelifyApp:
     def __init__(self, master):
         self.master = master
-        self.master.title("Reelify - Simplify Your Artwork Workflow")
+        self.master.title("Reelify - Portfolio Preparation Made Easy")
+        self.master.config(bg="#333333")
+        master.geometry("525x500")  # Window size
+        master.resizable(False, False)  # Disable resizing both width and height
+
+        title_frame = Frame(master, bg="#333333")
+        title_frame.grid(row=0, column=0, columnspan=3, pady=20)
+
+        Label(title_frame, text="REELIFY", font=("Helvetica", 36, "bold"), fg="white", bg="#333333").grid(row=0, column=0)
 
         # Variables for input paths
         self.dir_artwork = StringVar()
         self.logo_path = StringVar()
         self.dir_output = StringVar()
-        self.feature = StringVar()
+        
         
         # UI Layout for file paths
-        Label(master, text="Artwork Directory:").grid(row=0, column=0, padx=10, pady=5)
-        Entry(master, textvariable=self.dir_artwork, width=50).grid(row=0, column=1, padx=10, pady=5)
-        Button(master, text="Browse", command=self.browse_artwork).grid(row=0, column=2, padx=10, pady=5)
+        Label(master, text="Artwork Directory:", fg="white", bg="#333333").grid(row=1, column=0, padx=10, pady=5)
+        Entry(master, textvariable=self.dir_artwork, width=50).grid(row=1, column=1, padx=10, pady=5)
+        Button(master, text="Browse", command=self.browse_artwork, bg="#555555", fg="white").grid(row=1, column=2, padx=10, pady=5)
 
-        Label(master, text="Logo Path:").grid(row=1, column=0, padx=10, pady=5)
-        Entry(master, textvariable=self.logo_path, width=50).grid(row=1, column=1, padx=10, pady=5)
-        Button(master, text="Browse", command=self.browse_logo).grid(row=1, column=2, padx=10, pady=5)
+        Label(master, text="Logo Path:", fg="white", bg="#333333").grid(row=2, column=0, padx=10, pady=5)
+        Entry(master, textvariable=self.logo_path, width=50).grid(row=2, column=1, padx=10, pady=5)
+        Button(master, text="Browse", command=self.browse_logo, bg="#555555", fg="white").grid(row=2, column=2, padx=10, pady=5)
 
-        Label(master, text="Output Directory:").grid(row=2, column=0, padx=10, pady=5)
-        Entry(master, textvariable=self.dir_output, width=50).grid(row=2, column=1, padx=10, pady=5)
-        Button(master, text="Browse", command=self.browse_output).grid(row=2, column=2, padx=10, pady=5)
+        Label(master, text="Output Directory:", fg="white", bg="#333333").grid(row=3, column=0, padx=10, pady=5)
+        Entry(master, textvariable=self.dir_output, width=50).grid(row=3, column=1, padx=10, pady=5)
+        Button(master, text="Browse", command=self.browse_output, bg="#555555", fg="white").grid(row=3, column=2, padx=10, pady=5)
 
         # Dropdown for features
-        Label(master, text="Feature:").grid(row=3, column=0, padx=10, pady=5)
+        Label(master, text="Feature:", fg="white", bg="#333333").grid(row=4, column=0, padx=10, pady=5)
+        self.feature = StringVar()
         self.feature.set("Logo Stamp")
-        OptionMenu(master, self.feature, "Logo Stamp", "Watermark", "Demo Reel", command=self.update_feature_fields).grid(row=3, column=1, padx=10, pady=5)
+        OptionMenu(master, self.feature, "Logo Stamp", "Watermark", "Demo Reel", command=self.update_feature_fields).grid(row=4, column=1, padx=10, pady=5)
 
         # Frame for feature-specific input fields
         self.feature_frame = Frame(master)
-        self.feature_frame.grid(row=4, column=0, columnspan=3)
+        self.feature_frame.grid(row=5, column=0, columnspan=3)
 
         # Run button
-        Button(master, text="Run", command=self.run_feature).grid(row=5, column=1, pady=20)
+        Button(master, text="Run", command=self.run_feature, bg="#555555", fg="white").grid(row=6, column=1, pady=20)
 
         # Initialize fields based on default feature
         self.update_feature_fields("Logo Stamp")
