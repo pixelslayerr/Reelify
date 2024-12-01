@@ -1,8 +1,7 @@
 import os
 from PIL import Image
-from tkinter import Tk, Label, Entry, Button, filedialog, StringVar, OptionMenu
+from tkinter import Tk, Label, Entry, Button, filedialog, StringVar, OptionMenu, Frame
 from moviepy.editor import *
-
 
 class ReelifyApp:
     def __init__(self, master):
@@ -13,8 +12,9 @@ class ReelifyApp:
         self.dir_artwork = StringVar()
         self.logo_path = StringVar()
         self.dir_output = StringVar()
-
-        # UI Layout
+        self.feature = StringVar()
+        
+        # UI Layout for file paths
         Label(master, text="Artwork Directory:").grid(row=0, column=0, padx=10, pady=5)
         Entry(master, textvariable=self.dir_artwork, width=50).grid(row=0, column=1, padx=10, pady=5)
         Button(master, text="Browse", command=self.browse_artwork).grid(row=0, column=2, padx=10, pady=5)
@@ -29,12 +29,18 @@ class ReelifyApp:
 
         # Dropdown for features
         Label(master, text="Feature:").grid(row=3, column=0, padx=10, pady=5)
-        self.feature = StringVar()
         self.feature.set("Logo Stamp")
-        OptionMenu(master, self.feature, "Logo Stamp", "Watermark", "Demo Reel").grid(row=3, column=1, padx=10, pady=5)
+        OptionMenu(master, self.feature, "Logo Stamp", "Watermark", "Demo Reel", command=self.update_feature_fields).grid(row=3, column=1, padx=10, pady=5)
+
+        # Frame for feature-specific input fields
+        self.feature_frame = Frame(master)
+        self.feature_frame.grid(row=4, column=0, columnspan=3)
 
         # Run button
-        Button(master, text="Run", command=self.run_feature).grid(row=4, column=1, pady=20)
+        Button(master, text="Run", command=self.run_feature).grid(row=5, column=1, pady=20)
+
+        # Initialize fields based on default feature
+        self.update_feature_fields("Logo Stamp")
 
     def browse_artwork(self):
         self.dir_artwork.set(filedialog.askdirectory())
@@ -44,6 +50,65 @@ class ReelifyApp:
 
     def browse_output(self):
         self.dir_output.set(filedialog.askdirectory())
+
+    def update_feature_fields(self, selected_feature):
+        # Clear any existing feature-specific fields
+        for widget in self.feature_frame.winfo_children():
+            widget.destroy()
+
+        if selected_feature == "Logo Stamp":
+            # Fields for Logo Stamp
+            self.logo_scale = StringVar()
+            Label(self.feature_frame, text="Scale Multiplier:").grid(row=0, column=0, padx=10, pady=5)
+            Entry(self.feature_frame, textvariable=self.logo_scale, width=20).grid(row=0, column=1, padx=10, pady=5)
+            self.logo_scale.set("1")
+
+            self.logo_position = StringVar()
+            self.logo_position.set("bottom_right")  # Default position
+            positions = ["top_left", "top_right", "bottom_left", "bottom_right"]
+            Label(self.feature_frame, text="Logo Position:").grid(row=1, column=0, padx=10, pady=5)
+            OptionMenu(self.feature_frame, self.logo_position, *positions).grid(row=1, column=1, padx=10, pady=5)
+
+        elif selected_feature == "Watermark":
+            # Fields for Watermark
+            self.scale_multiplier = StringVar()
+            self.opacity = StringVar()
+            self.rotation = StringVar()
+
+            Label(self.feature_frame, text="Scale Multiplier:").grid(row=0, column=0, padx=10, pady=5)
+            Entry(self.feature_frame, textvariable=self.scale_multiplier, width=20).grid(row=0, column=1, padx=10, pady=5)
+            self.scale_multiplier.set("1")
+
+            Label(self.feature_frame, text="Opacity (0-255):").grid(row=1, column=0, padx=10, pady=5)
+            Entry(self.feature_frame, textvariable=self.opacity, width=20).grid(row=1, column=1, padx=10, pady=5)
+            self.opacity.set("128")
+
+            Label(self.feature_frame, text="Rotation Angle:").grid(row=2, column=0, padx=10, pady=5)
+            Entry(self.feature_frame, textvariable=self.rotation, width=20).grid(row=2, column=1, padx=10, pady=5)
+            self.rotation.set("45")
+
+        elif selected_feature == "Demo Reel":
+            # Fields for Demo Reel
+            self.artist_name = StringVar()
+            self.phone_number = StringVar()
+            self.email = StringVar()
+            self.reel_title = StringVar()
+
+            Label(self.feature_frame, text="Artist Name:").grid(row=0, column=0, padx=10, pady=5)
+            Entry(self.feature_frame, textvariable=self.artist_name, width=30).grid(row=0, column=1, padx=10, pady=5)
+            self.artist_name.set("John Doe")
+
+            Label(self.feature_frame, text="Phone Number:").grid(row=1, column=0, padx=10, pady=5)
+            Entry(self.feature_frame, textvariable=self.phone_number, width=30).grid(row=1, column=1, padx=10, pady=5)
+            self.phone_number.set("123-456-7890")
+
+            Label(self.feature_frame, text="Email:").grid(row=2, column=0, padx=10, pady=5)
+            Entry(self.feature_frame, textvariable=self.email, width=30).grid(row=2, column=1, padx=10, pady=5)
+            self.email.set("johndoe@example.com")
+
+            Label(self.feature_frame, text="Reel Title:").grid(row=3, column=0, padx=10, pady=5)
+            Entry(self.feature_frame, textvariable=self.reel_title, width=30).grid(row=3, column=1, padx=10, pady=5)
+            self.reel_title.set("My Demo Reel")
 
     def run_feature(self):
         # Validate paths
@@ -62,16 +127,23 @@ class ReelifyApp:
 
     def run_logo_stamp(self):
         print("Running Logo Stamp...")
-        logo_stamp(self.dir_artwork.get(), self.logo_path.get(), self.dir_output.get(), position="bottom_right")
+        logo_stamp(self.dir_artwork.get(), self.logo_path.get(), self.dir_output.get(),
+                   position=self.logo_position.get(),
+                   logo_scale=int(self.logo_scale.get()))
 
     def run_watermark(self):
         print("Running Watermark...")
-        watermark(self.dir_artwork.get(), self.logo_path.get(), self.dir_output.get(), scale_multiplier=1, opacity=128, rotation=45)
+        watermark(self.dir_artwork.get(), self.logo_path.get(), self.dir_output.get(),
+                  scale_multiplier=float(self.scale_multiplier.get()), 
+                  opacity=int(self.opacity.get()), rotation=int(self.rotation.get()))
 
     def run_demo_reel(self):
         print("Running Demo Reel...")
         demo_reel(self.dir_artwork.get(), self.logo_path.get(), self.dir_output.get(),
-                  artist_name="John Doe", phone_number="123-456-7890", email="johndoe@example.com", reel_title="My Demo Reel")
+                  artist_name=self.artist_name.get(), 
+                  phone_number=self.phone_number.get(), 
+                  email=self.email.get(), 
+                  reel_title=self.reel_title.get())
 
 
 def logo_stamp(dir_artwork, logo_path, dir_output, position="bottom_right", logo_scale=1):
@@ -148,7 +220,7 @@ def watermark(dir_artwork, logo_path, dir_output, scale_multiplier=1, opacity=12
             artwork = Image.open(artwork_path).convert("RGBA")
             artwork_width, artwork_height = artwork.size
 
-            scaled_logo_width = int(artwork_width * scale_multiplier)
+            scaled_logo_width = int(artwork_width * scale_multiplier / 10)
             logo_aspect_ratio = logo.height / logo.width
             scaled_logo_height = int(scaled_logo_width * logo_aspect_ratio)
             resized_logo = logo_opacity.resize(
@@ -239,4 +311,3 @@ if __name__ == "__main__":
     root = Tk()
     app = ReelifyApp(root)
     root.mainloop()
-
