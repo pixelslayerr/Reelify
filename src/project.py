@@ -1,82 +1,81 @@
 import os
 from PIL import Image
+from tkinter import Tk, Label, Entry, Button, filedialog, StringVar, OptionMenu
 from moviepy.editor import *
 
-dir_artwork = ""
-logo_path = ""
-dir_output = ""
+
+class ReelifyApp:
+    def __init__(self, master):
+        self.master = master
+        self.master.title("Reelify - Simplify Your Artwork Workflow")
+
+        # Variables for input paths
+        self.dir_artwork = StringVar()
+        self.logo_path = StringVar()
+        self.dir_output = StringVar()
+
+        # UI Layout
+        Label(master, text="Artwork Directory:").grid(row=0, column=0, padx=10, pady=5)
+        Entry(master, textvariable=self.dir_artwork, width=50).grid(row=0, column=1, padx=10, pady=5)
+        Button(master, text="Browse", command=self.browse_artwork).grid(row=0, column=2, padx=10, pady=5)
+
+        Label(master, text="Logo Path:").grid(row=1, column=0, padx=10, pady=5)
+        Entry(master, textvariable=self.logo_path, width=50).grid(row=1, column=1, padx=10, pady=5)
+        Button(master, text="Browse", command=self.browse_logo).grid(row=1, column=2, padx=10, pady=5)
+
+        Label(master, text="Output Directory:").grid(row=2, column=0, padx=10, pady=5)
+        Entry(master, textvariable=self.dir_output, width=50).grid(row=2, column=1, padx=10, pady=5)
+        Button(master, text="Browse", command=self.browse_output).grid(row=2, column=2, padx=10, pady=5)
+
+        # Dropdown for features
+        Label(master, text="Feature:").grid(row=3, column=0, padx=10, pady=5)
+        self.feature = StringVar()
+        self.feature.set("Logo Stamp")
+        OptionMenu(master, self.feature, "Logo Stamp", "Watermark", "Demo Reel").grid(row=3, column=1, padx=10, pady=5)
+
+        # Run button
+        Button(master, text="Run", command=self.run_feature).grid(row=4, column=1, pady=20)
+
+    def browse_artwork(self):
+        self.dir_artwork.set(filedialog.askdirectory())
+
+    def browse_logo(self):
+        self.logo_path.set(filedialog.askopenfilename(filetypes=[("Image Files", "*.png *.jpg *.jpeg")]))
+
+    def browse_output(self):
+        self.dir_output.set(filedialog.askdirectory())
+
+    def run_feature(self):
+        # Validate paths
+        if not self.dir_artwork.get() or not self.logo_path.get() or not self.dir_output.get():
+            print("Please ensure all directories are selected.")
+            return
+
+        feature = self.feature.get()
+
+        if feature == "Logo Stamp":
+            self.run_logo_stamp()
+        elif feature == "Watermark":
+            self.run_watermark()
+        elif feature == "Demo Reel":
+            self.run_demo_reel()
+
+    def run_logo_stamp(self):
+        print("Running Logo Stamp...")
+        logo_stamp(self.dir_artwork.get(), self.logo_path.get(), self.dir_output.get(), position="bottom_right")
+
+    def run_watermark(self):
+        print("Running Watermark...")
+        watermark(self.dir_artwork.get(), self.logo_path.get(), self.dir_output.get(), scale_multiplier=1, opacity=128, rotation=45)
+
+    def run_demo_reel(self):
+        print("Running Demo Reel...")
+        demo_reel(self.dir_artwork.get(), self.logo_path.get(), self.dir_output.get(),
+                  artist_name="John Doe", phone_number="123-456-7890", email="johndoe@example.com", reel_title="My Demo Reel")
 
 
-def main():
-    global dir_artwork, logo_path, dir_output
-
-    print("\n--- Set Global Directories ---")
-    dir_artwork = input("Enter the directory containing the artwork: ")
-    logo_path = input("Enter the directory for the logo: ")
-    dir_output = input("Enter the path for the output directory: ")
-
-
-    while True:
-        print("\n||| Welcome to Reelify! What feature would you like to use? |||")
-        
-        print("1. Logo Stamp")
-        print("2. Watermark")
-        print("3. Demo Reel")
-        print("4. Exit")
-
-        choice = input("Enter your choice (1-4): ")
-
-        if choice == "1":
-            
-            global logo_scale
-            logo_scale = float(input("Enter a multiplier for the size of the logo: ") or 1)
-
-            print("\nWhere would you like the logo to be stamped?:")
-            print("1. Bottom Right")
-            print("2. Bottom Left")
-            print("3. Top Right")
-            print("4. Top Left")
-            
-            position_choice = input("Enter your choice (1-4): ")
-
-            position_map = {
-                "1": "bottom_right",
-                "2": "bottom_left",
-                "3": "top_right",
-                "4": "top_left",
-            }
-            
-            position = position_map.get(position_choice, "bottom_right")
-
-
-            logo_stamp(position=position)
-        
-        elif choice == "2":
-
-            logo_scale = float(input("Enter a multiplier for size of the logo: ") or 1)
-            opacity = int(input("Enter the watermark opacity (0-255): ") or 128)
-            rotation_angle = float(input("Enter the watermark rotation angle (e.g., 45): ") or 0)
-           
-            watermark(logo_scale, opacity, rotation_angle)
-        
-        elif choice == "3":
-            
-            artist_name = (input("Enter your name: ") or "John Doe")
-            phone_number = (input("Enter your phone number") or "123-456-7890")
-            email = (input("Enter your E-Mail Address") or "johndoe@example.com")
-            reel_title = (input("Enter the title of your reel: ") or "My Demo Reel")
-
-            demo_reel(artist_name, phone_number, email, reel_title)
-
-        elif choice == "4":
-            print("Shutting down Reelify...")
-            break
-        else:
-            print("Unrecognized choice. Please select a number between 1 and 4.")
-
-
-def logo_stamp(position="bottom_right"):
-    global dir_artwork, logo_path, dir_output
+def logo_stamp(dir_artwork, logo_path, dir_output, position="bottom_right", logo_scale=1):
+    
     
     if not os.path.exists(dir_output):
         os.makedirs(dir_output)
@@ -131,8 +130,7 @@ def logo_stamp(position="bottom_right"):
 
     print(f"Completed stamping logos on images within {dir_output}")
 
-def watermark(scale_multiplier=1, opacity=128, rotation=45):
-    global dir_artwork, logo_path, dir_output
+def watermark(dir_artwork, logo_path, dir_output, scale_multiplier=1, opacity=128, rotation=45):
 
     logo = Image.open(logo_path).convert("RGBA")
     logo_width, logo_height = logo.size
@@ -149,8 +147,6 @@ def watermark(scale_multiplier=1, opacity=128, rotation=45):
         if filename.lower().endswith((".png", ".jpg", ".jpeg")):
             artwork = Image.open(artwork_path).convert("RGBA")
             artwork_width, artwork_height = artwork.size
-
-            scale_multiplier = logo_scale/100
 
             scaled_logo_width = int(artwork_width * scale_multiplier)
             logo_aspect_ratio = logo.height / logo.width
@@ -178,9 +174,7 @@ def watermark(scale_multiplier=1, opacity=128, rotation=45):
     print(f"Completed watermarking images within {dir_output}")
     
 
-def demo_reel(artist_name, phone_number, email, reel_title):
-
-    global dir_artwork, dir_output
+def demo_reel(dir_artwork, logo_path, dir_output, artist_name, phone_number, email, reel_title):
     
     print("Processing files for demo reel...")
 
@@ -242,5 +236,7 @@ def demo_reel(artist_name, phone_number, email, reel_title):
     reel.write_videofile(output_file, fps=24, codec="libx264", audio_codec="aac")
 
 if __name__ == "__main__":
-    main()
+    root = Tk()
+    app = ReelifyApp(root)
+    root.mainloop()
 
