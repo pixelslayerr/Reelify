@@ -1,5 +1,7 @@
 import os
 from PIL import Image
+from moviepy.editor import VideoFileClip, ImageClip, concatenate_videoclips
+
 
 dir_artwork = ""
 logo_path = ""
@@ -171,8 +173,43 @@ def watermark(scale_multiplier=1, opacity=128, rotation=45):
     
 
 def demo_reel():
-    print("Haven't implemented this feature yet!")
 
+    global dir_artwork, dir_output
+    
+    print("Processing files for demo reel...")
+
+    supported_images = (".png", ".jpg", ".jpeg")
+    supported_videos = (".mp4", ".mov")
+
+    clips = []
+
+    for filename in os.listdir(dir_artwork):
+        file_path = os.path.join(dir_artwork, filename)
+
+        if filename.lower().endswith(supported_images):
+
+            image_clip = (
+                ImageClip(file_path)
+                .set_duration(1)
+                
+            )
+            clips.append(image_clip)
+
+        elif filename.lower().endswith(supported_videos):
+
+            video_clip = VideoFileClip(file_path)
+            clips.append(video_clip)
+
+
+        if not clips:
+            print("One or more of the files in the directory is unsupported! Please try again...")
+            return
+        
+    reel = concatenate_videoclips(clips, method="compose")
+
+    output_file = os.path.join(dir_output, "demo_reel.mp4")
+
+    reel.write_videofile(output_file, fps=24, codec="libx264", audio_codec="aac")
 
 if __name__ == "__main__":
     main()
