@@ -4,3 +4,6 @@ A simply Python tool that automates the process of adding logos, watermarking, a
 
 # Demonstration Video 
 https://www.youtube.com/watch?v=oGgsgntIxR0
+
+# Github Repository
+https://github.com/pixelslayerr/Reelify.git
