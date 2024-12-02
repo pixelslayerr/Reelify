@@ -6,14 +6,16 @@ from moviepy.editor import *
 class ReelifyApp:
     def __init__(self, master):
         self.master = master
-        self.master.title("Reelify - Portfolio Preparation Made Easy")
-        self.master.config(bg="#333333")
+        self.master.title("Reelify - Portfolio Preparation Made Easy") # Window Label
+        self.master.config(bg="#333333") # Background Color
         master.geometry("525x500")  # Window size
         master.resizable(False, False)  # Disable resizing both width and height
 
+        # Frame for Title Text
         title_frame = Frame(master, bg="#333333")
         title_frame.grid(row=0, column=0, columnspan=3, pady=20)
 
+        #Label for Title Text
         Label(title_frame, text="REELIFY", font=("Helvetica", 36, "bold"), fg="white", bg="#333333").grid(row=0, column=0)
 
         # Variables for input paths
@@ -61,11 +63,13 @@ class ReelifyApp:
         self.dir_output.set(filedialog.askdirectory())
 
     def update_feature_fields(self, selected_feature):
+       
         # Clear any existing feature-specific fields
         for widget in self.feature_frame.winfo_children():
             widget.destroy()
 
         if selected_feature == "Logo Stamp":
+            
             # Fields for Logo Stamp
             self.logo_scale = StringVar()
             Label(self.feature_frame, text="Scale Multiplier:").grid(row=0, column=0, padx=10, pady=5)
@@ -73,12 +77,13 @@ class ReelifyApp:
             self.logo_scale.set("1")
 
             self.logo_position = StringVar()
-            self.logo_position.set("bottom_right")  # Default position
+            self.logo_position.set("bottom_right")
             positions = ["top_left", "top_right", "bottom_left", "bottom_right"]
             Label(self.feature_frame, text="Logo Position:").grid(row=1, column=0, padx=10, pady=5)
             OptionMenu(self.feature_frame, self.logo_position, *positions).grid(row=1, column=1, padx=10, pady=5)
 
         elif selected_feature == "Watermark":
+            
             # Fields for Watermark
             self.scale_multiplier = StringVar()
             self.opacity = StringVar()
@@ -97,6 +102,7 @@ class ReelifyApp:
             self.rotation.set("45")
 
         elif selected_feature == "Demo Reel":
+            
             # Fields for Demo Reel
             self.artist_name = StringVar()
             self.phone_number = StringVar()
@@ -120,6 +126,7 @@ class ReelifyApp:
             self.reel_title.set("My Demo Reel")
 
     def run_feature(self):
+        
         # Validate paths
         if not self.dir_artwork.get() or not self.logo_path.get() or not self.dir_output.get():
             print("Please ensure all directories are selected.")
@@ -127,13 +134,15 @@ class ReelifyApp:
 
         feature = self.feature.get()
 
+        # Choose run function depending on the selected "feature"
         if feature == "Logo Stamp":
             self.run_logo_stamp()
         elif feature == "Watermark":
             self.run_watermark()
         elif feature == "Demo Reel":
             self.run_demo_reel()
-
+        
+    # Run Functions receive arguments from ReelifyApp class and passes them onto the actual functions
     def run_logo_stamp(self):
         print("Running Logo Stamp...")
         logo_stamp(self.dir_artwork.get(), self.logo_path.get(), self.dir_output.get(),
@@ -153,17 +162,15 @@ class ReelifyApp:
                   phone_number=self.phone_number.get(), 
                   email=self.email.get(), 
                   reel_title=self.reel_title.get())
+                  
 
-
+# Logo Stamp function
 def logo_stamp(dir_artwork, logo_path, dir_output, position="bottom_right", logo_scale=1):
     
-    
-    if not os.path.exists(dir_output):
-        os.makedirs(dir_output)
-
+    # Convert logo to RGBA to ensure transparency
     logo = Image.open(logo_path).convert("RGBA")
     
-
+    # Cycle through each file in chosen directory
     for filename in os.listdir(dir_artwork):
         artwork_path = os.path.join(dir_artwork, filename)
 
@@ -181,11 +188,11 @@ def logo_stamp(dir_artwork, logo_path, dir_output, position="bottom_right", logo
             resized_logo = logo.resize((new_logo_width, new_logo_height), Image.Resampling.LANCZOS)
             
 
-
+            # Calculate margins by always being proportional to the artwork's size. 
             margin_x = int(artwork_width * 0.01)
             margin_y = int(artwork_width * 0.01)
 
-
+            # Invert x and y positions values based off of chosen position, offset by margin
             if position == "bottom_right":
                 x = artwork_width - new_logo_width - margin_x
                 y = artwork_height - new_logo_height - margin_y
@@ -202,26 +209,32 @@ def logo_stamp(dir_artwork, logo_path, dir_output, position="bottom_right", logo
                 x = artwork_width - new_logo_width - margin_x
                 y = artwork_height - new_logo_height - margin_y
 
-
+            # Composite resized logo onto artwork
             artwork.paste(resized_logo, (x, y), resized_logo)
 
-
+            # Save each artwork to chosen output
             output_path = os.path.join(dir_output, filename)
             artwork.convert("RGB").save(output_path, "PNG")
 
     print(f"Completed stamping logos on images within {dir_output}")
 
+# Watermark Function
 def watermark(dir_artwork, logo_path, dir_output, scale_multiplier=1, opacity=128, rotation=45):
 
+    # Convert logo to RGBA to ensure transparency
     logo = Image.open(logo_path).convert("RGBA")
     logo_width, logo_height = logo.size
 
     logo_opacity = Image.new("RGBA", logo.size)
+
+    # Nested for loop to operate on each pixel in logo 
     for x in range(logo_width):
         for y in range(logo_height):
-            r, g, b, a = logo.getpixel((x, y))
-            logo_opacity.putpixel((x, y), (r, g, b, int(a * (opacity / 255))))
+            r, g, b, a = logo.getpixel((x, y)) # Get RGBA of each pixel in logo
+            logo_opacity.putpixel((x, y), (r, g, b, int(a * (opacity / 255)))) # Mulitply Alpha Component by quotient of opacity arg and 255
 
+
+    # Cycle through each file in chosen directory
     for filename in os.listdir(dir_artwork):
         artwork_path = os.path.join(dir_artwork, filename)
 
@@ -236,85 +249,109 @@ def watermark(dir_artwork, logo_path, dir_output, scale_multiplier=1, opacity=12
                 (scaled_logo_width, scaled_logo_height), Image.Resampling.LANCZOS
             )
 
+            # Rotate logo by rotation argument
             rotated_logo = resized_logo.rotate(rotation, expand=True)
 
+            # New empty image for watermark layer
             watermark_layer = Image.new("RGBA", (artwork_width, artwork_height), (0, 0, 0, 0))
 
             x_offset, y_offset = 0, 0
             while y_offset < artwork_height:
-                while x_offset < artwork_width:
-                    watermark_layer.paste(rotated_logo, (x_offset, y_offset), rotated_logo)
-                    x_offset += rotated_logo.width
+                while x_offset < artwork_width: 
+                    watermark_layer.paste(rotated_logo, (x_offset, y_offset), rotated_logo) # Nested while loop to paste logo until image bounds are reached
+                    x_offset += rotated_logo.width # Update x offset per width of the rotated logo
                 x_offset = 0
-                y_offset += rotated_logo.height
-
+                y_offset += rotated_logo.height # Update y offset per height of the rotated logo
+                
+            # Composite watermark layer onto artwork
             watermarked_artwork = Image.alpha_composite(artwork, watermark_layer)
+
+            # Save each artwork to chosen output
             output_path = os.path.join(dir_output, filename)
             watermarked_artwork.convert("RGB").save(output_path, "PNG")
 
     print(f"Completed watermarking images within {dir_output}")
     
-
+# Demo Reel Function
 def demo_reel(dir_artwork, logo_path, dir_output, artist_name, phone_number, email, reel_title):
     
     print("Processing files for demo reel...")
-
+    
+    # Empty list to contain clips
     clips = []
 
-    #Create Demo Reel Intro Plate
-
+    # Create Demo Reel Intro Plate
     title_text = TextClip(f"{reel_title}", fontsize=120, color='white', bg_color='black', size=(1920, 200)).set_position(("center", 100))
     name_text = TextClip(f"{artist_name}", fontsize=60, color='white', bg_color='black', size=(1920, 100)).set_position(("center", 700))
     phone_text = TextClip(f"{phone_number}", fontsize=50, color='white', bg_color='black', size=(1920, 100)).set_position(("center", 800))
     email_text = TextClip(f"{email}", fontsize=50, color='white', bg_color='black', size=(1920, 100)).set_position(("center", 900))
 
+    # Open logo for intro image
     logo = Image.open(logo_path)
 
+    # Validate logo transparency
     if logo.mode != "RGBA":
         logo = logo.convert("RGBA")
 
+    # Save logo with alpha to disk
     logo.save("logo_with_alpha.png")
 
+    # Resize logo_with_alpha and reposition to center
     logo_clip = (
         ImageClip("logo_with_alpha.png")
         .resize(height=300)  
         .set_position(("center", 350))  
     )
 
+    # Composite intro text elements together and set duration for 5 seconds
     intro_text = CompositeVideoClip([title_text, name_text, phone_text, email_text, logo_clip], size=(1920, 1080)).set_duration(5)
 
+    # Supported file formats
     supported_images = (".png", ".jpg", ".jpeg")
     supported_videos = (".mp4", ".mov")
 
+    # Append intro text to the beginning of the video
     clips.append(intro_text)
 
+    # Check every element inside artwork directory
     for filename in os.listdir(dir_artwork):
         file_path = os.path.join(dir_artwork, filename)
 
+        # Append element for 2 seconds if it's an image
         if filename.lower().endswith(supported_images):
 
             image_clip = (
                 ImageClip(file_path)
-                .set_duration(1)
+                .set_duration(2)
                 
             )
             clips.append(image_clip)
 
+        # Append element as normal if it's a video
         elif filename.lower().endswith(supported_videos):
 
             video_clip = VideoFileClip(file_path)
             clips.append(video_clip)
 
-
+        # Return error message if element in directory is not supported. 
         if not clips:
             print("One or more of the files in the directory is unsupported! Please try again...")
             return
         
-    reel = concatenate_videoclips(clips, method="compose")
+    # Append intro text to the end of the video
+    clips.append(intro_text)
 
+    # Compose elements within clips list into reel
+    reel = concatenate_videoclips(clips, method="compose")
+    
+    # Save reel file
     output_file = os.path.join(dir_output, "demo_reel.mp4")
 
+    # Write reel file with codec
     reel.write_videofile(output_file, fps=24, codec="libx264", audio_codec="aac")
+
+    # Delete temporary logo with alpha file
+    os.remove("logo_with_alpha.png")
 
 if __name__ == "__main__":
     root = Tk()
